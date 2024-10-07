@@ -23,12 +23,17 @@ services:
 
   mongodb:
     image: mongo:latest
-    container_name: mongo
+    container_name: mongo-db
     ports:
       - "27017:27017"
+    volumes:
+      - mongo_data:/data/db  
     networks:
       - app-network
 
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  mongo_data:  # Defina o volume aqui
