@@ -1,9 +1,8 @@
 <?php
 
 use App\Http\Controllers\ClashRoyaleController;
-use App\Http\Controllers\MainController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MainController;
 
-Route::get('/', [MainController::class, 'index']);
 
-Route::get('/player/{tag}', [ClashRoyaleController::class, 'getPlayer']);
+Route::get('/clashroyale', [ClashRoyaleController::class, 'index']);
