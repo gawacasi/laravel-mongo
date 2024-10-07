@@ -1,37 +1,34 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Player; // Modelo para interagir com a coleção "players"
-use Illuminate\Support\Facades\Http; // Para fazer requisições HTTP
+use GuzzleHttp\Client;
 
 class PlayerController extends Controller
 {
-    public function findPlayer(Request $request)
-    {
-        $playerName = $request->input('name');
+    public function show($tag)
+{
 
-        $response = Http::get("https://api.clashroyale.com/v1/players?name={$playerName}", [
-            'Authorization' => 'Bearer ' . env('CLASH_ROYALE_API_KEY'),
+    $client = new Client();
+    $apiKey = env('CLASH_ROYALE_API_TOKEN');
+    $url = "https://api.clashroyale.com/v1/players/%23" . urlencode($tag);
+
+    try {
+        $response = $client->request('GET', $url, [
+            'headers' => [
+                'Accept' => 'application/json',
+                'Authorization' => "Bearer {$apiKey}",
+            ],
         ]);
 
-        if ($response->successful()) {
-            $playerData = $response->json();
+        $playerData = json_decode($response->getBody());
+        
+        dd($playerData);
 
-            // Inserir jogador no banco de dados
-            $player = Player::create([
-                'id' => $playerData['id'], // Supondo que você tenha um campo 'id'
-                'name' => $playerData['name'],
-                'trophies' => $playerData['trophies'],
-                'wins' => $playerData['wins'],
-                'losses' => $playerData['losses'],
-                // Adicione outros campos conforme necessário
-            ]);
-
-            return response()->json(['message' => 'Player added to database', 'player' => $player], 201);
-        }
-
-        return response()->json(['message' => 'Player not found'], 404);
+        return view('player.show', compact('playerData'));
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Player not found or API error'], 404);
     }
+}
+
 }

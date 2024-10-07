@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use Jenssegers\Mongodb\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Player extends Model
 {
-    protected $connection = 'mongodb';
-    protected $collection = 'players';
+    use HasFactory;
 
     protected $fillable = [
         'tag',
@@ -17,4 +17,3 @@ class Player extends Model
         'losses',
     ];
 }
-

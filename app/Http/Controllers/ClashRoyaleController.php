@@ -2,31 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use App\Services\ClashRoyaleService;
 
 class ClashRoyaleController extends Controller
 {
-    public function index()
+    protected $clashRoyaleService;
+
+    public function __construct(ClashRoyaleService $clashRoyaleService)
     {
-        $apiUrl = 'https://api.clashroyale.com/v1/players/YOUR_PLAYER_TAG';
-        $apiKey = env('CR_API_KEY');
+        $this->clashRoyaleService = $clashRoyaleService;
+    }
 
-        $client = new Client();
+    public function getPlayer($tag)
+    {
+        $playerData = $this->clashRoyaleService->getPlayer($tag);
 
-        try {
-
-            $response = $client->request('GET', $apiUrl, [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $apiKey,
-                ],
-            ]);
-
-            // Retorne os dados da API
-            $data = json_decode($response->getBody(), true);
-            return view('clashroyale.index', compact('data'));
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch data'], 500);
+        if (isset($playerData['error'])) {
+            return response()->json($playerData, 500);
         }
+
+        // Player::updateOrCreate(['tag' => $tag], $playerData);
+
+        return response()->json($playerData);
     }
 }
