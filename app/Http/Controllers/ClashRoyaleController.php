@@ -1,44 +1,38 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Services\ClashRoyaleService;
-use App\Models\Player;
+use Illuminate\Support\Facades\Http;
+use App\Models\Player; // Supondo que você tenha um modelo Player
 
 class ClashRoyaleController extends Controller
 {
-    protected $clashRoyaleService;
-
-    public function __construct(ClashRoyaleService $clashRoyaleService)
-    {
-        $this->clashRoyaleService = $clashRoyaleService;
-    }
-
-
     public function getPlayer($tag)
     {
-        $service = new ClashRoyaleService();
+        // Substitua a chave pela sua variável de ambiente
+        $apiToken = env('CLASH_ROYALE_API_TOKEN');
+        $url = "https://api.clashroyale.com/v1/players/{$tag}";
 
-        $apiKey = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6Ijc0YWFhNjk5LTc5ZmYtNDJkZC04MzU2LWE0MDAzYWViY2RhNSIsImlhdCI6MTcyODAxNTE1Nywic3ViIjoiZGV2ZWxvcGVyLzJmMmMzMGNmLTk4ZDYtY2Q1YS00ZjMzLTk3MGI2OGZkOGIzMCIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyIxNzAuNzkuMTY5LjE2NiJdLCJ0eXBlIjoiY2xpZW50In1dfQ.OqZRLjXMwWMxyORQPw734uYhw07-DpKuirkpVfGDeF-oYHbnP2TiLw_gzOT8k49zIZfr6A166Ia0iPMQo86u6g";
-        
-        $playerInfo = $service->getPlayerInfo($tag, $apiKey);
+        $response = Http::withToken($apiToken)->get($url);
 
-        if (isset($playerInfo['error'])) {
-            return view('player.error', ['error' => $playerInfo['error']]);
+        if ($response->successful()) {
+            $playerData = $response->json();
+
+            // Armazenar o jogador no banco de dados
+            Player::updateOrCreate(
+                ['tag' => $playerData['tag']], // Usando o 'tag' como identificador único
+                [
+                    'name' => $playerData['name'],
+                    'trophies' => $playerData['trophies'],
+                    'wins' => $playerData['wins'],
+                    'losses' => $playerData['losses'],
+                    // Adicione outros campos conforme necessário
+                ]
+            );
+
+            return response()->json($playerData);
+        } else {
+            return response()->json(['error' => 'Player not found'], 404);
         }
-
-        Player::updateOrCreate(
-            ['tag' => $playerInfo['tag']],
-            [
-                'name' => $playerInfo['name'],
-                'trophies' => $playerInfo['trophies'],
-                'wins' => $playerInfo['wins'],
-                'losses' => $playerInfo['losses'],
-            ]
-        );
-
-        return view('player.show', ['player' => $playerInfo]);
     }
-
 }
