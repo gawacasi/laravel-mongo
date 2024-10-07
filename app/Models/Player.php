@@ -2,14 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
-class Player extends Model
+class Player extends Eloquent
 {
-    protected $connection = 'mongodb'; 
-    protected $collection = 'players';
-
-    protected $fillable = [
-        'tag', 'name', 'trophies', 'wins', 'losses',
-    ];
+    protected $connection = 'mongodb';
+    protected $fillable = ['tag', 'name', 'trophies', 'wins', 'losses'];
 }
