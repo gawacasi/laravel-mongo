@@ -14,6 +14,11 @@ class ClashRoyaleController extends Controller
         $this->clashRoyaleService = $clashRoyaleService;
     }
 
+    public function getAllPlayers()
+    {
+        $players = Player::all();
+        return view('clashroyale.all_players', ['players' => $players]);
+    }
     public function getComboLosses($combo, $startTimestamp, $endTimestamp)
     {
         $result = Player::raw(function ($collection) use ($combo, $startTimestamp, $endTimestamp) {
